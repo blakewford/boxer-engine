@@ -1,0 +1,11 @@
+libboxer.a: boxer.o
+	ar -cvq $@ $^
+	cp $@ ../$@
+
+
+boxer.o: boxer.cpp
+	g++ -g -c $< -o $@ -I../../include -std=c++11
+
+clean:
+	-@rm libboxer.a
+	-@rm *.o

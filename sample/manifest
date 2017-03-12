@@ -1,0 +1,5 @@
+{
+  "manifest_version": 1,
+  "res/Test.bmp": "Test",
+  "res/Test2.bmp": "Test2"
+}

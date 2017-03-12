@@ -1,0 +1,18 @@
+sample: main.o
+	g++ $^ -o sample -L$(BOXER_DIR)/lib -lboxer
+
+.PHONY: dictionary.h
+
+dictionary.h:
+ifndef BOXER_DIR
+    $(error BOXER_DIR is undefined)
+endif
+	$(BOXER_DIR)/tools/gen > $@
+
+main.o: main.cpp dictionary.h
+	g++ -g -c $< -o $@ -I$(BOXER_DIR)/include
+
+clean:
+	-@rm sample
+	-@rm dictionary.h
+	-@rm *.o

@@ -1,0 +1,5 @@
+gen
+libboxer.a
+*.o
+dictionary.h
+sample
