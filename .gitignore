@@ -2,4 +2,5 @@ gen
 libboxer.a
 *.o
 dictionary.h
-sample
+sample/sample
+debug.bmp

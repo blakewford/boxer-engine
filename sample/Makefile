@@ -10,7 +10,7 @@ endif
 	$(BOXER_DIR)/tools/gen > $@
 
 main.o: main.cpp dictionary.h
-	g++ -g -c $< -o $@ -I$(BOXER_DIR)/include
+	g++ -g -c $< -o $@ -I$(BOXER_DIR)/include -std=c++11
 
 clean:
 	-@rm sample

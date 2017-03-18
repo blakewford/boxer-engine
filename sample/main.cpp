@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <unistd.h>
 
+#include "perf.h"
 #include "boxer.h"
 #include "dictionary.h"
 
@@ -35,9 +36,12 @@ void boxerMain()
         x = rand() % ((stage->width-sprite->width) + 1);
         y = rand() % ((stage->height-sprite->height) + 1);
         printf("Coordinate %d %d\n", x, y);
+
+BEGIN_SCOPE
         boxer::setStage(STAGE);
         assert(boxer::blockResource(SPRITE, x, y) == 0);
         boxer::showStage();
+SCOPE("Frame Time")
 
         usleep(1000*1000);
     }
