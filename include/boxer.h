@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdint.h>
 #include <limits.h>
 
@@ -27,6 +29,14 @@ namespace boxer
         uint32_t important;
     }__attribute__((packed));
 
+    struct colorTable
+    {
+        uint32_t R;
+        uint32_t G;
+        uint32_t B;
+        uint8_t padding[72];
+    }__attribute__((packed));
+
     struct detail
     {
         uint8_t R: 5;
@@ -43,5 +53,9 @@ namespace boxer
     int32_t getArgc();
     char** getArgv();
     const uint8_t* getResource(int32_t id);
+
+    void setStage(int32_t id);
+    int32_t blockResource(int32_t id, int32_t x, int32_t y);
+    void showStage();
 }
 

@@ -1,6 +1,9 @@
+#include <time.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <unistd.h>
 
 #include "boxer.h"
 #include "dictionary.h"
@@ -15,41 +18,27 @@ void boxerMain()
         printf("%s\n", arg[count++]);
     }
 
-    const boxer::bmpStat* stat = (const boxer::bmpStat*)boxer::getResource(TEST);
-    if(stat == NULL)
+    const boxer::bmpStat* stage = (const boxer::bmpStat*)boxer::getResource(STAGE);
+    const boxer::bmpStat* sprite = (const boxer::bmpStat*)boxer::getResource(SPRITE);
+    if(stage == NULL || sprite == NULL)
     {
         printf("Error! NULL file pullled from manifest!\n");
         return;
     }
 
-    printf("%x\n", stat->ident);
-    printf("%x\n", stat->size);
-    printf("%x\n", stat->reserved);
-    printf("%x\n", stat->offset);
-    printf("%x\n", stat->headerSize);
-    printf("%x\n", stat->width);
-    printf("%x\n", stat->height);
-    assert(stat->colorPlanes == 1);
-    printf("%x\n", stat->colorPlanes);
-    printf("%x\n", stat->depth);
-    assert(stat->compression == 3); //BI_BITFIELDS
-    printf("%x\n", stat->compression);
-    printf("%x\n", stat->dataSize);
-    printf("%x\n", stat->horRes);
-    printf("%x\n", stat->vertRes);
-    printf("%x\n", stat->paletteSize);
-    printf("%x\n", stat->important);
+    srand(time(NULL));
 
-    boxer::bbfPixel* data = (boxer::bbfPixel*)(boxer::getResource(TEST) + sizeof(boxer::bmpStat));
-
-    count = 0;
-    while(count < (stat->dataSize/2))
+    int32_t x = 0;
+    int32_t y = 0;
+    while(true)
     {
-        printf("%4x ", data[count].p);
-        count++;
-        if(count%8 == 0)
-        {
-            printf("\n");
-        }
+        x = rand() % ((stage->width-sprite->width) + 1);
+        y = rand() % ((stage->height-sprite->height) + 1);
+        printf("Coordinate %d %d\n", x, y);
+        boxer::setStage(STAGE);
+        assert(boxer::blockResource(SPRITE, x, y) == 0);
+        boxer::showStage();
+
+        usleep(1000*1000);
     }
 }

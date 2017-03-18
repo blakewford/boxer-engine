@@ -1,9 +1,11 @@
-libboxer.a: boxer.o
+libboxer.a: boxer.o stage.o
 	ar -cvq $@ $^
 	cp $@ ../$@
 
-
 boxer.o: boxer.cpp
+	g++ -g -c $< -o $@ -I../../include -std=c++11
+
+stage.o: stage.cpp
 	g++ -g -c $< -o $@ -I../../include -std=c++11
 
 clean:

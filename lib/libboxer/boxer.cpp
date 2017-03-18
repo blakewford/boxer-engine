@@ -6,6 +6,7 @@
 #include <unistd.h>
 
 #include "boxer.h"
+#include "stage.h"
 
 extern int32_t _BOXER_FILES_SIZE;
 extern char* _BOXER_FILES[];
@@ -17,6 +18,13 @@ char* cachedArgv[64];
 namespace boxer
 {
 
+enum error: int32_t
+{
+    SUCCESS,
+    FAILURE
+};
+
+stage* gStage = NULL;
 std::map<int32_t, uint8_t*> gResourceMap;
 
 int32_t getArgc()
@@ -35,6 +43,47 @@ const uint8_t* getResource(int32_t id)
     return found == gResourceMap.end() ? NULL: gResourceMap.find(id)->second;
 }
 
+void setStage(int32_t id)
+{
+    if(gStage != NULL)
+    {
+        gStage->~stage();
+        free(gStage);
+    }
+
+    gStage = (stage*)malloc(sizeof(stage));
+    gStage->init(id);
+}
+
+int32_t blockResource(int32_t id, int32_t x, int32_t y)
+{
+    int32_t code = FAILURE;
+
+    if(gStage == NULL || (x > gStage->getWidth()) || (y > gStage->getHeight()))
+        return code;
+
+    const boxer::bmpStat* stat = (const boxer::bmpStat*)boxer::getResource(id);
+    assert(stat != NULL);
+    assert(stat->colorPlanes == 1);
+    assert(stat->compression == 3); //BI_BITFIELDS
+
+    if((x+stat->width) <= gStage->getWidth() && (y+stat->height) <= gStage->getHeight())
+    {
+        gStage->draw(boxer::getResource(id), x, y);
+        code = SUCCESS;
+    }
+
+    return code;
+}
+
+void showStage()
+{
+    if(gStage != NULL)
+    {
+        gStage->show();
+    }
+}
+
 struct _BUILDER
 {
    ~_BUILDER()
@@ -44,6 +93,11 @@ struct _BUILDER
         while(count < _BOXER_FILES_SIZE)
         {
             free(gResourceMap.find(count++)->second);
+        }
+        if(gStage != NULL)
+        {
+            gStage->~stage();
+            free(gStage);
         }
     }
 
