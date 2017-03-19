@@ -112,7 +112,7 @@ static _BUILDER resourceBuilder;
 
 }
 
-extern "C" void preload(const char* path)
+void preload(const char* path)
 {
     int32_t count = 0;
     char buffer[PATH_MAX];
@@ -172,4 +172,10 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved)
     return JNI_VERSION_1_6;
 }
 
+extern "C" JNIEXPORT void JNICALL Java_org_starlo_boxer_BoxerEngine_preload(JNIEnv* env, jobject obj, jstring pathString)
+{
+   const char* path = env->GetStringUTFChars(pathString, NULL);
+   preload(path);
+   env->ReleaseStringUTFChars(pathString, path);
+}
 #endif
