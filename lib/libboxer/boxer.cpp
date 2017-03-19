@@ -8,6 +8,11 @@
 #include "boxer.h"
 #include "stage.h"
 
+#ifdef __ANDROID__
+#include "jni.h"
+#include <android/log.h>
+#endif
+
 extern int32_t _BOXER_FILES_SIZE;
 extern char* _BOXER_FILES[];
 
@@ -155,7 +160,6 @@ int32_t main(int32_t argc, char** argv)
 }
 
 #ifdef __ANDROID__
-#include "jni.h"
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved)
 {
@@ -165,7 +169,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved)
         return -1;
     }
 
-    preload("");
+    preload("/data/user/0/org.starlo.momentum/app_"); //Very ugly, needs vast improvement
 
     return JNI_VERSION_1_6;
 }
