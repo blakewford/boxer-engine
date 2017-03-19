@@ -112,7 +112,7 @@ static _BUILDER resourceBuilder;
 
 }
 
-void preload(const char* path)
+extern "C" void preload(const char* path)
 {
     int32_t count = 0;
     char buffer[PATH_MAX];
@@ -168,8 +168,6 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved)
     {
         return -1;
     }
-
-    preload("/data/user/0/org.starlo.momentum/app_"); //Very ugly, needs vast improvement
 
     return JNI_VERSION_1_6;
 }
