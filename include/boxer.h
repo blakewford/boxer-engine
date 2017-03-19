@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <limits.h>
 
-void boxerMain();
+extern "C" void boxerMain();
 
 namespace boxer
 {

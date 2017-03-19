@@ -107,25 +107,14 @@ static _BUILDER resourceBuilder;
 
 }
 
-int32_t main(int32_t argc, char** argv)
+void preload(const char* path)
 {
-    cachedArgc = argc;
-    char* storagePointer = argvStorage;
-    while(argc--)
-    {
-        cachedArgv[argc] = storagePointer;
-        int32_t length = strlen(argv[argc]);
-        strcat(storagePointer, argv[argc]);
-        storagePointer+=(length+1);
-    }
-
     int32_t count = 0;
     char buffer[PATH_MAX];
-    char* finalSlash = strrchr(cachedArgv[0], '/');
     while(count < _BOXER_FILES_SIZE)
     {
         memset(buffer, '\0', PATH_MAX);
-        memcpy(buffer, cachedArgv[0], (finalSlash - cachedArgv[0]) + 1);
+        memcpy(buffer, path, strlen(path));
         strcat(buffer, _BOXER_FILES[count]);
         FILE* temp = fopen(buffer, "r");
         if(temp)
@@ -141,8 +130,44 @@ int32_t main(int32_t argc, char** argv)
         }
         count++;
     }
+}
 
+int32_t main(int32_t argc, char** argv)
+{
+    cachedArgc = argc;
+    char* storagePointer = argvStorage;
+    while(argc--)
+    {
+        cachedArgv[argc] = storagePointer;
+        int32_t length = strlen(argv[argc]);
+        strcat(storagePointer, argv[argc]);
+        storagePointer+=(length+1);
+    }
+
+    char buffer[PATH_MAX];
+    memset(buffer, '\0', PATH_MAX);
+    char* finalSlash = strrchr(cachedArgv[0], '/');
+    memcpy(buffer, cachedArgv[0], (finalSlash - cachedArgv[0]) + 1);
+    preload(buffer);
     boxerMain();
 
     return 0;
 }
+
+#ifdef __ANDROID__
+#include "jni.h"
+
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved)
+{
+    JNIEnv* env;
+    if(vm->GetEnv((void**)&env, JNI_VERSION_1_6) != JNI_OK)
+    {
+        return -1;
+    }
+
+    preload("");
+
+    return JNI_VERSION_1_6;
+}
+
+#endif
