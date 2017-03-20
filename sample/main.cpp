@@ -43,6 +43,10 @@ BEGIN_SCOPE
         boxer::showStage();
 SCOPE("Frame Time")
 
+#ifdef __ANDROID__
+        usleep(125*1000);
+#else
         usleep(1000*1000);
+#endif
     }
 }
