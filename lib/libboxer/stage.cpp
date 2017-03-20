@@ -5,6 +5,14 @@
 
 #include "stage.h"
 
+#ifdef __ANDROID__
+#include "jni.h"
+extern JNIEnv* jEnv;
+extern jclass jBoxerEngine;
+extern jmethodID jShowStage;
+extern char androidData[PATH_MAX];
+#endif
+
 namespace boxer
 {
 
@@ -61,7 +69,15 @@ void stage::draw(const uint8_t* bmp, int32_t x, int32_t y)
 
 void stage::show()
 {
+#ifdef __ANDROID__
+    char buffer[PATH_MAX];
+    memset(buffer, '\0', PATH_MAX);
+    memcpy(buffer, androidData, strlen(androidData));
+    strcat(buffer, "debug.bmp");
+    FILE* debug = fopen(buffer, "w");
+#else
     FILE* debug = fopen("debug.bmp", "w");
+#endif
     if(debug)
     {
         boxer::bmpStat stat;
@@ -90,6 +106,12 @@ void stage::show()
         fwrite(&table, 1, sizeof(boxer::colorTable), debug);
         fwrite(m_stageData, 1, m_stageWidth*m_stageHeight*2, debug);
         fclose(debug);
+
+#ifdef __ANDROID__
+        jstring imageString = jEnv->NewStringUTF(buffer);
+        jEnv->CallStaticVoidMethod(jBoxerEngine, jShowStage, imageString);
+        jEnv->DeleteLocalRef(imageString);
+#endif
     }
 }
 
