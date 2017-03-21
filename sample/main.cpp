@@ -39,7 +39,8 @@ void boxerMain()
 
 BEGIN_SCOPE
         boxer::setStage(STAGE);
-        assert(boxer::blockResource(SPRITE, x, y) == 0);
+        int32_t status = boxer::blockResource(SPRITE, x, y);
+        assert(status == 0);
         boxer::showStage();
 SCOPE("Frame Time")
 

@@ -17,20 +17,27 @@ public class BoxerEngine
         mScreen = view;
     }
 
-    static public void showStage(String path)
+    static public void showStage(final String path)
     {
         final long startTime = System.nanoTime();
-        try
+        mScreen.post(new Runnable()
         {
-            File background = new File(path);
-            Drawable frame =
-                Drawable.createFromStream(new BufferedInputStream(new FileInputStream(background)), null);
-            if(mScreen != null) mScreen.setImageDrawable(frame);
-        }catch(Exception e)
-        {
-            Log.v("Boxer", e.toString());
-        }
-        Log.v("Boxer", "Frame time: "+new Long((System.nanoTime()-startTime)/1000000).toString());
+            public void run()
+            {
+                try
+                {
+                    Drawable frame = Drawable.createFromPath(path);
+                    if(mScreen != null)
+                    {
+                        mScreen.setImageDrawable(frame);
+                    }
+                }catch(Exception e)
+                {
+                    Log.v("Boxer", e.toString());
+                }
+            }
+        });
+        //Log.v("Boxer", "Frame time: "+new Long((System.nanoTime()-startTime)/1000000).toString());
     }
 
     static{ System.loadLibrary("boxer"); }
