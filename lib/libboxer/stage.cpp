@@ -8,6 +8,8 @@
 #ifdef __ANDROID__
 #include "jni.h"
 extern JavaVM* jVM;
+extern jclass jBoxerEngine;
+extern jmethodID jShowStage;
 extern char androidData[PATH_MAX];
 #endif
 
@@ -108,8 +110,6 @@ void stage::show()
 #ifdef __ANDROID__
         JNIEnv* jThreadEnv = NULL;
         jVM->AttachCurrentThread(&jThreadEnv, NULL);
-        jclass jBoxerEngine = jThreadEnv->FindClass("org/starlo/boxer/BoxerEngine");
-        jmethodID jShowStage = jThreadEnv->GetStaticMethodID(jBoxerEngine, "showStage", "(Ljava/lang/String;)V");
         jstring imageString = jThreadEnv->NewStringUTF(buffer);
         jThreadEnv->CallStaticVoidMethod(jBoxerEngine, jShowStage, imageString);
         jThreadEnv->DeleteLocalRef(imageString);

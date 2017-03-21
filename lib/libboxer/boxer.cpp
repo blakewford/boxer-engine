@@ -162,6 +162,8 @@ int32_t main(int32_t argc, char** argv)
 #ifdef __ANDROID__
 
 JavaVM* jVM = NULL;
+jclass jBoxerEngine = NULL;
+jmethodID jShowStage = NULL;
 char androidData[PATH_MAX];
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved)
@@ -191,6 +193,8 @@ extern "C" JNIEXPORT void JNICALL Java_org_starlo_boxer_BoxerEngine_preload(JNIE
 
 extern "C" JNIEXPORT void JNICALL Java_org_starlo_boxer_BoxerEngine_boxerMain(JNIEnv* env, jobject obj)
 {
+    jBoxerEngine = env->FindClass("org/starlo/boxer/BoxerEngine");
+    jShowStage = env->GetStaticMethodID(jBoxerEngine, "showStage", "(Ljava/lang/String;)V");
     boxerMain();
 }
 
