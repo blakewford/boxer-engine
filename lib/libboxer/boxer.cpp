@@ -179,11 +179,14 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved)
 extern "C" JNIEXPORT void JNICALL Java_org_starlo_boxer_BoxerEngine_preload(JNIEnv* env, jobject obj, jstring pathString)
 {
     const char* path = env->GetStringUTFChars(pathString, NULL);
+
     preload(path);
-    env->ReleaseStringUTFChars(pathString, path);
 
     memset(androidData, '\0', PATH_MAX);
-    memcpy(androidData, path, strlen(path));
+    char* finalSlash = strrchr(path, '/');
+    memcpy(androidData, path, (finalSlash - path) + 1);
+
+    env->ReleaseStringUTFChars(pathString, path);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_starlo_boxer_BoxerEngine_boxerMain(JNIEnv* env, jobject obj)
