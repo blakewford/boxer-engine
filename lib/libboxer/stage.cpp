@@ -57,7 +57,11 @@ void stage::draw(const uint8_t* bmp, int32_t x, int32_t y)
     {
         while(width < stat->width)
         {
-            stage->p = data[count++].p;
+            if(data[count].p != 0xEE0) //08df00 HTML
+            {
+                stage->p = data[count].p;
+            }
+            count++;
             stage++;
             width++;
         }
