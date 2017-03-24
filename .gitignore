@@ -4,3 +4,4 @@ libboxer.a
 dictionary.h
 sample/sample
 debug.bmp
+lib/libboxer/obj
