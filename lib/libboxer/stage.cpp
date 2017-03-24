@@ -32,6 +32,7 @@ stage::~stage()
 void stage::init(int32_t id)
 {
     const boxer::bmpStat* stat = (const boxer::bmpStat*)boxer::getResource(id);
+    assert(stat->width % 4 == 0);
     assert(stat->colorPlanes == 1);
     assert(stat->compression == 3); //BI_BITFIELDS
 
@@ -47,6 +48,7 @@ void stage::init(int32_t id)
 void stage::draw(const uint8_t* bmp, int32_t x, int32_t y)
 {
     const boxer::bmpStat* stat = (const boxer::bmpStat*)bmp;
+    assert(stat->width % 4 == 0);
     const boxer::bbfPixel* data = (const boxer::bbfPixel*)(bmp + stat->offset);
     bbfPixel* stage = (bbfPixel*)&m_stageData[(y*m_stageWidth)*2 + (x*2)];
 
