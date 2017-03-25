@@ -43,11 +43,5 @@ BEGIN_SCOPE
         assert(status == 0);
         boxer::showStage();
 SCOPE("Frame Time")
-
-#ifdef __ANDROID__
-        usleep(125*1000);
-#else
-        usleep(1000*1000);
-#endif
     }
 }

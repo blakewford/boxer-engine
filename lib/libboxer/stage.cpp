@@ -42,7 +42,6 @@ void stage::init(int32_t id)
     memcpy(m_stageData, data, stat->dataSize);
     m_stageWidth = stat->width;
     m_stageHeight = stat->height;
-    
 }
 
 void stage::draw(const uint8_t* bmp, int32_t x, int32_t y)

@@ -30,6 +30,7 @@ enum error: int32_t
 };
 
 stage* gStage = NULL;
+int32_t gFrameDelay = 0;
 std::map<int32_t, uint8_t*> gResourceMap;
 
 int32_t getArgc()
@@ -40,6 +41,16 @@ int32_t getArgc()
 char** getArgv()
 {
     return cachedArgv;
+}
+
+int32_t getFrameDelay()
+{
+    return gFrameDelay;
+}
+
+void setFrameDelay(int32_t ms)
+{
+    gFrameDelay = ms;
 }
 
 const uint8_t* getResource(int32_t id)
@@ -87,6 +98,7 @@ void showStage()
     {
         gStage->show();
     }
+    usleep(gFrameDelay*1000);
 }
 
 struct _BUILDER
@@ -114,6 +126,15 @@ static _BUILDER resourceBuilder;
 
 void preload(const char* path)
 {
+    int32_t delay = 0;
+#ifdef __ANDROID__
+    delay = 125;
+#else
+    delay = 1000;
+#endif
+
+    boxer::setFrameDelay(delay);
+
     int32_t count = 0;
     char buffer[PATH_MAX];
     while(count < _BOXER_FILES_SIZE)

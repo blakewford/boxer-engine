@@ -52,6 +52,8 @@ namespace boxer
 
     int32_t getArgc();
     char** getArgv();
+    int32_t getFrameDelay();
+    void setFrameDelay(int32_t ms);
     const uint8_t* getResource(int32_t id);
 
     void setStage(int32_t id);
