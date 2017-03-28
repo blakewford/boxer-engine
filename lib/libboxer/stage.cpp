@@ -58,8 +58,7 @@ void stage::draw(const uint8_t* bmp, int32_t x, int32_t y)
     {
         while(width < stat->width)
         {
-            if(data[count].p != 0xEE0 /*08df00 HTML*/ && (((data[count].p < 0x6FF) || (data[count].p > 0x6FFF))
-                || ((data[count].p & 0xF800) > 0x5800) || ((data[count].p & 0x1F) > 0x7)))
+            if(data[count].p != 0xEE0 /*08df00 HTML*/)
             {
                 stage->p = data[count].p;
             }
