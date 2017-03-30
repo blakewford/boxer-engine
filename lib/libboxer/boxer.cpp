@@ -128,7 +128,7 @@ void preload(const char* path)
 {
     int32_t delay = 0;
 #ifdef __ANDROID__
-    delay = 125;
+    delay = 48; //Empirical, but could be derived by checking CPU usage is less than max output of 2 threads
 #else
     delay = 1000;
 #endif
