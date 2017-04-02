@@ -43,7 +43,7 @@ BEGIN_SCOPE
         int32_t status = boxer::blockResource(SPRITE, x, y);
         assert(status == 0);
         boxer::showStage();
-        boxer::stopAudioResource(AUDIO);
 SCOPE("Frame Time")
+        boxer::waitAudioResource(AUDIO);
     }
 }

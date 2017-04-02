@@ -41,6 +41,7 @@ struct audioParam
 {
     int32_t id;
     int32_t delay;
+    bool keepGoing;
 };
 
 #define MAX_AUDIO_THREADS 16
@@ -148,11 +149,12 @@ void* audioResourceThread(void* param)
 #ifdef __ANDROID__
             jThreadEnv->DeleteLocalRef(jData);
 #else
+            pa_simple_drain(stream, NULL);
             pa_simple_free(stream);
 #endif
         }
 
-        if(desc->id < 0 || desc->delay == -1)
+        if(desc->keepGoing == false || desc->delay == -1)
             break;
 
         usleep(desc->delay*1000);
@@ -166,6 +168,7 @@ void startAudioResource(int32_t id, int32_t delay)
     waitAudioResource(id);
     gAudioThreadParam[gAudioThreadIndex].id = id;
     gAudioThreadParam[gAudioThreadIndex].delay = delay;
+    gAudioThreadParam[gAudioThreadIndex].keepGoing = true;
     pthread_create(&gAudioThread[gAudioThreadIndex], NULL, audioResourceThread, &gAudioThreadParam[gAudioThreadIndex]);
     if(++gAudioThreadIndex == MAX_AUDIO_THREADS)
     {
@@ -180,7 +183,7 @@ void stopAudioResource(int32_t id)
     {
         if(gAudioThreadParam[i].id == id)
         {
-            gAudioThreadParam[i].id = -1;
+            gAudioThreadParam[i].keepGoing = false;
             waitAudioResource(id);
             break;
         }
