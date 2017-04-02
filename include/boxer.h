@@ -50,6 +50,12 @@ namespace boxer
         detail d;
     };
 
+    struct wavStat
+    {
+        uint8_t padding[40];
+        uint32_t size;
+    }__attribute__((packed));
+
     int32_t getArgc();
     char** getArgv();
     int32_t getFrameDelay();
@@ -59,5 +65,9 @@ namespace boxer
     void setStage(int32_t id);
     int32_t blockResource(int32_t id, int32_t x, int32_t y);
     void showStage();
+
+    void startAudioResource(int32_t id, int32_t delay = -1);
+    void stopAudioResource(int32_t id);
+    void waitAudioResource(int32_t id);
 }
 

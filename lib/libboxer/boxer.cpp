@@ -11,6 +11,8 @@
 #ifdef __ANDROID__
 #include "jni.h"
 #include <android/log.h>
+#else
+#include <pulse/simple.h>
 #endif
 
 extern int32_t _BOXER_FILES_SIZE;
@@ -32,6 +34,17 @@ enum error: int32_t
 stage* gStage = NULL;
 int32_t gFrameDelay = 0;
 std::map<int32_t, uint8_t*> gResourceMap;
+
+struct audioParam
+{
+    int32_t id;
+    int32_t delay;
+};
+
+#define MAX_AUDIO_THREADS 16
+pthread_t gAudioThread[MAX_AUDIO_THREADS];
+audioParam gAudioThreadParam[MAX_AUDIO_THREADS];
+int32_t gAudioThreadIndex = 0;
 
 int32_t getArgc()
 {
@@ -99,6 +112,91 @@ void showStage()
         gStage->show();
     }
     usleep(gFrameDelay*1000);
+}
+
+#define WAV_HEADER_SIZE 44
+#define AUDIO_BUFFER_SIZE 1024
+void* audioResourceThread(void* param)
+{
+    audioParam* desc = (audioParam*)param;
+    const boxer::wavStat* stat = (const boxer::wavStat*)boxer::getResource(desc->id);
+    const uint8_t* data = (const uint8_t*)(boxer::getResource(desc->id) + WAV_HEADER_SIZE);
+    while(true)
+    {
+#ifdef __ANDROID__
+#error NotImplemented
+#else
+        static const pa_sample_spec spec = { .format = PA_SAMPLE_S16LE, .rate = 44100, .channels = 2 };
+        pa_simple* stream = pa_simple_new(NULL, NULL, PA_STREAM_PLAYBACK, NULL, "boxer_track", &spec, NULL, NULL, NULL);
+        if(stream != NULL)
+#endif
+        {
+            int i = WAV_HEADER_SIZE;
+            while(i+AUDIO_BUFFER_SIZE < stat->size)
+            {
+#ifdef __ANDROID__
+#error NotImplemented
+#else
+                if(pa_simple_write(stream, &data[i], AUDIO_BUFFER_SIZE, NULL) < 0)
+#endif
+                {
+                    break;
+                }
+                i+=AUDIO_BUFFER_SIZE;
+            }
+#ifdef __ANDROID__
+#error NotImplemented
+#else
+            pa_simple_free(stream);
+#endif
+        }
+
+        if(desc->id < 0 || desc->delay == -1)
+            break;
+
+        usleep(desc->delay*1000);
+    }
+
+    return NULL;
+}
+
+void startAudioResource(int32_t id, int32_t delay)
+{
+    waitAudioResource(id);
+    gAudioThreadParam[gAudioThreadIndex].id = id;
+    gAudioThreadParam[gAudioThreadIndex].delay = delay;
+    pthread_create(&gAudioThread[gAudioThreadIndex], NULL, audioResourceThread, &gAudioThreadParam[gAudioThreadIndex]);
+    if(++gAudioThreadIndex == MAX_AUDIO_THREADS)
+    {
+        gAudioThreadIndex = 0;
+    }
+}
+
+void stopAudioResource(int32_t id)
+{
+    int32_t i = MAX_AUDIO_THREADS;
+    while(i--)
+    {
+        if(gAudioThreadParam[i].id == id)
+        {
+            gAudioThreadParam[i].id = -1;
+            waitAudioResource(id);
+            break;
+        }
+    }
+}
+
+void waitAudioResource(int32_t id)
+{
+    int32_t i = MAX_AUDIO_THREADS;
+    while(i--)
+    {
+        if(gAudioThreadParam[i].id == id)
+        {
+            pthread_join(gAudioThread[i], NULL);
+            break;
+        }
+    }
 }
 
 struct _BUILDER

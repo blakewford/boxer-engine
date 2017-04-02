@@ -138,9 +138,9 @@ void parser(uint8_t* text)
 
 int main(int argc, char** argv)
 {
-    memset(globalPath, '\0', MAX_MANIFEST_ENTRY*MAX_MANIFEST_TEXT );
+    memset(globalPath, '\0', MAX_MANIFEST_ENTRY*MAX_MANIFEST_TEXT);
 
-    FILE* manifest = fopen( "manifest", "r" );
+    FILE* manifest = fopen("manifest", "r");
     if(manifest)
     {
         fseek(manifest, 0, SEEK_END);
@@ -156,7 +156,7 @@ int main(int argc, char** argv)
     }
     else
     {
-        printf( "Could not find manifest\n" );
+        printf("Could not find manifest\n");
     }
 
     return 0;

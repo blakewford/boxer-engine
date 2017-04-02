@@ -1,5 +1,5 @@
 sample: main.o
-	g++ $^ -O3 -o sample -L$(BOXER_DIR)/lib -lboxer
+	g++ $^ -O3 -o sample -L$(BOXER_DIR)/lib -lboxer -lpthread -lpulse-simple -lpulse
 
 .PHONY: dictionary.h
 

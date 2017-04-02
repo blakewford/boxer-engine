@@ -1,5 +1,6 @@
 {
   "manifest_version": 1,
   "res/Stage.bmp": "Stage",
-  "res/Sprite.bmp": "Sprite"
+  "res/Sprite.bmp": "Sprite",
+  "res/background.wav": "Audio"
 }

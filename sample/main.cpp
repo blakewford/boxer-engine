@@ -33,6 +33,7 @@ void boxerMain()
     int32_t y = 0;
     while(true)
     {
+        boxer::startAudioResource(AUDIO);
         x = rand() % ((stage->width-sprite->width) + 1);
         y = rand() % ((stage->height-sprite->height) + 1);
         printf("Coordinate %d %d\n", x, y);
@@ -42,6 +43,7 @@ BEGIN_SCOPE
         int32_t status = boxer::blockResource(SPRITE, x, y);
         assert(status == 0);
         boxer::showStage();
+        boxer::stopAudioResource(AUDIO);
 SCOPE("Frame Time")
     }
 }
