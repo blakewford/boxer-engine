@@ -3,7 +3,9 @@ package org.starlo.boxer;
 import java.io.*;
 
 import android.util.*;
+import android.media.*;
 import android.widget.*;
+import android.content.*;
 import android.graphics.drawable.*;
 
 public class BoxerEngine
@@ -12,9 +14,21 @@ public class BoxerEngine
     static public native void boxerMain();
 
     static ImageView mScreen = null;
+    static AudioTrack mPlayer = null;
     static public void initialize(ImageView view)
     {
         mScreen = view;
+        AudioAttributes attributes = new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_GAME)
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .build();
+        AudioFormat format = new AudioFormat.Builder()
+                .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                .setSampleRate(44100)
+                .setChannelMask(AudioFormat.CHANNEL_OUT_STEREO)
+                .build();
+        int id = ((AudioManager)mScreen.getContext().getSystemService(Context.AUDIO_SERVICE)).generateAudioSessionId();
+        mPlayer = new AudioTrack(attributes, format, 512, AudioTrack.MODE_STREAM, id);
     }
 
     static public void showStage(final String path)
@@ -38,6 +52,11 @@ public class BoxerEngine
             }
         });
         //Log.v("Boxer", "Frame time: "+new Long((System.nanoTime()-startTime)/1000000).toString());
+    }
+
+    static public void audioWrite(short[] data)
+    {
+        mPlayer.write(data, 0, data.length);
     }
 
     static{ System.loadLibrary("boxer"); }
