@@ -117,7 +117,6 @@ void showStage()
 }
 
 #define WAV_HEADER_SIZE 44
-#define AUDIO_BUFFER_SIZE 1024
 void* audioResourceThread(void* param)
 {
     audioParam* desc = (audioParam*)param;
@@ -130,27 +129,22 @@ void* audioResourceThread(void* param)
         jVM->AttachCurrentThread(&jThreadEnv, NULL);
         jclass engine = jThreadEnv->FindClass("org/starlo/boxer/BoxerEngine");
         jmethodID audioWrite = jThreadEnv->GetStaticMethodID(engine, "audioWrite", "([S)V");
-        jshortArray jData = jThreadEnv->NewShortArray(AUDIO_BUFFER_SIZE/2);
+        jshortArray jData = jThreadEnv->NewShortArray(stat->size/2);
 #else
         static const pa_sample_spec spec = { .format = PA_SAMPLE_S16LE, .rate = 44100, .channels = 2 };
         pa_simple* stream = pa_simple_new(NULL, NULL, PA_STREAM_PLAYBACK, NULL, "boxer_track", &spec, NULL, NULL, NULL);
         if(stream != NULL)
 #endif
         {
-            int i = WAV_HEADER_SIZE;
-            while(i+AUDIO_BUFFER_SIZE < stat->size)
-            {
 #ifdef __ANDROID__
-                jThreadEnv->SetShortArrayRegion(jData, 0, AUDIO_BUFFER_SIZE/2, (const short*)data);
+                jThreadEnv->SetShortArrayRegion(jData, 0, stat->size/2, (const short*)data);
                 jThreadEnv->CallStaticVoidMethod(engine, audioWrite, jData);
 #else
-                if(pa_simple_write(stream, &data[i], AUDIO_BUFFER_SIZE, NULL) < 0)
+                if(pa_simple_write(stream, data, stat->size, NULL) < 0)
 #endif
                 {
                     break;
                 }
-                i+=AUDIO_BUFFER_SIZE;
-            }
 #ifdef __ANDROID__
             jThreadEnv->DeleteLocalRef(jData);
 #else
