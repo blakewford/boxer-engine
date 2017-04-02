@@ -28,7 +28,8 @@ public class BoxerEngine
                 .setChannelMask(AudioFormat.CHANNEL_OUT_STEREO)
                 .build();
         int id = ((AudioManager)mScreen.getContext().getSystemService(Context.AUDIO_SERVICE)).generateAudioSessionId();
-        mPlayer = new AudioTrack(attributes, format, 512, AudioTrack.MODE_STREAM, id);
+        mPlayer = new AudioTrack(attributes, format, 1024, AudioTrack.MODE_STREAM, id);
+        mPlayer.play();
     }
 
     static public void showStage(final String path)
