@@ -11,8 +11,6 @@
 #ifdef __ANDROID__
 #include "jni.h"
 #include <android/log.h>
-
-JavaVM* jVM = NULL;
 #else
 #include <pulse/simple.h>
 #endif
@@ -43,6 +41,9 @@ struct audioParam
     int32_t delay;
     bool keepGoing;
 };
+
+pthread_mutex_t jAudioMutex;
+audioParam* jAudioParam = NULL;
 
 #define MAX_AUDIO_THREADS 16
 pthread_t gAudioThread[MAX_AUDIO_THREADS];
@@ -121,38 +122,37 @@ void showStage()
 void* audioResourceThread(void* param)
 {
     audioParam* desc = (audioParam*)param;
-    const boxer::wavStat* stat = (const boxer::wavStat*)boxer::getResource(desc->id);
-    const uint8_t* data = (const uint8_t*)(boxer::getResource(desc->id) + WAV_HEADER_SIZE);
     while(true)
     {
 #ifdef __ANDROID__
-        JNIEnv* jThreadEnv = NULL;
-        jVM->AttachCurrentThread(&jThreadEnv, NULL);
-        jclass engine = jThreadEnv->FindClass("org/starlo/boxer/BoxerEngine");
-        jmethodID audioWrite = jThreadEnv->GetStaticMethodID(engine, "audioWrite", "([S)V");
-        jshortArray jData = jThreadEnv->NewShortArray(stat->size/2);
+        pthread_mutex_lock(&jAudioMutex);
+        while(jAudioParam != NULL)
+        {
+            pthread_mutex_unlock(&jAudioMutex);
+            usleep(1);
+            pthread_mutex_lock(&jAudioMutex);
+        }
+        audioParam* jParam = new audioParam();
+        jParam->id = desc->id;
+        jAudioParam = jParam;
+        pthread_mutex_unlock(&jAudioMutex);
+        while(jAudioParam != NULL)
+            usleep(1);
 #else
+        const boxer::wavStat* stat = (const boxer::wavStat*)boxer::getResource(desc->id);
+        const uint8_t* data = (const uint8_t*)(boxer::getResource(desc->id) + WAV_HEADER_SIZE);
         static const pa_sample_spec spec = { .format = PA_SAMPLE_S16LE, .rate = 44100, .channels = 2 };
         pa_simple* stream = pa_simple_new(NULL, NULL, PA_STREAM_PLAYBACK, NULL, "boxer_track", &spec, NULL, NULL, NULL);
         if(stream != NULL)
-#endif
         {
-#ifdef __ANDROID__
-                jThreadEnv->SetShortArrayRegion(jData, 0, stat->size/2, (const short*)data);
-                jThreadEnv->CallStaticVoidMethod(engine, audioWrite, jData);
-#else
-                if(pa_simple_write(stream, data, stat->size, NULL) < 0)
-#endif
-                {
-                    break;
-                }
-#ifdef __ANDROID__
-            jThreadEnv->DeleteLocalRef(jData);
-#else
+            if(pa_simple_write(stream, data, stat->size, NULL) < 0)
+            {
+                break;
+            }
             pa_simple_drain(stream, NULL);
             pa_simple_free(stream);
-#endif
         }
+#endif
 
         if(desc->keepGoing == false || desc->delay == -1)
             break;
@@ -205,6 +205,10 @@ void waitAudioResource(int32_t id)
 
 struct _BUILDER
 {
+    _BUILDER()
+    {
+        pthread_mutex_init(&jAudioMutex, NULL);
+    }
    ~_BUILDER()
     {
         int32_t count = 0;
@@ -283,6 +287,7 @@ int32_t main(int32_t argc, char** argv)
 }
 
 #ifdef __ANDROID__
+JavaVM* jVM = NULL;
 jclass jBoxerEngine = NULL;
 jmethodID jShowStage = NULL;
 char androidData[PATH_MAX];
@@ -317,6 +322,29 @@ extern "C" JNIEXPORT void JNICALL Java_org_starlo_boxer_BoxerEngine_boxerMain(JN
     jBoxerEngine = env->FindClass("org/starlo/boxer/BoxerEngine");
     jShowStage = env->GetStaticMethodID(jBoxerEngine, "showStage", "(Ljava/lang/String;)V");
     boxerMain();
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_starlo_boxer_BoxerEngine_audioResourceThread(JNIEnv* env, jobject obj)
+{
+    jclass engine = env->FindClass("org/starlo/boxer/BoxerEngine");
+    jmethodID audioWrite = env->GetStaticMethodID(engine, "audioWrite", "([S)V");
+    while(true)
+    {
+        if(boxer::jAudioParam != NULL)
+        {
+            const boxer::wavStat* stat = (const boxer::wavStat*)boxer::getResource(boxer::jAudioParam->id);
+            const uint8_t* data = (const uint8_t*)(boxer::getResource(boxer::jAudioParam->id) + WAV_HEADER_SIZE);
+            jshortArray jData = env->NewShortArray(stat->size/2);
+            env->SetShortArrayRegion(jData, 0, stat->size/2, (const short*)data);
+            env->CallStaticVoidMethod(engine, audioWrite, jData);
+            env->DeleteLocalRef(jData);
+            pthread_mutex_lock(&boxer::jAudioMutex);
+            delete boxer::jAudioParam;
+            boxer::jAudioParam = NULL;
+            pthread_mutex_unlock(&boxer::jAudioMutex);
+        }
+        usleep(1);
+    }
 }
 
 #endif
