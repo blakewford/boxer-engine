@@ -9,10 +9,6 @@
 #include "boxer_internal.h"
 #include "stage.h"
 
-#ifndef __ANDROID__
-#include <pulse/simple.h>
-#endif
-
 extern int32_t _BOXER_FILES_SIZE;
 extern char* _BOXER_FILES[];
 
@@ -33,8 +29,7 @@ stage* gStage = NULL;
 int32_t gFrameDelay = 0;
 std::map<int32_t, uint8_t*> gResourceMap;
 
-pthread_mutex_t jAudioMutex;
-audioParam* jAudioParam = NULL;
+pthread_mutex_t gAudioMutex;
 
 #define MAX_AUDIO_THREADS 16
 pthread_t gAudioThread[MAX_AUDIO_THREADS];
@@ -114,44 +109,7 @@ void* audioResourceThread(void* param)
     audioParam* desc = (audioParam*)param;
     while(true)
     {
-#ifdef __ANDROID__
-        pthread_mutex_lock(&jAudioMutex);
-        while(jAudioParam != NULL && desc->keepGoing)
-        {
-            pthread_mutex_unlock(&jAudioMutex);
-            sched_yield();
-            pthread_mutex_lock(&jAudioMutex);
-        }
-        audioParam* jParam = new audioParam();
-        jParam->id = desc->id;
-        jParam->keepGoing = desc->keepGoing;
-        jAudioParam = jParam;
-        pthread_mutex_unlock(&jAudioMutex);
-        while(jAudioParam != NULL && desc->keepGoing)
-        {
-            sched_yield();
-        }
-#else
-        const boxer::wavStat* stat = (const boxer::wavStat*)boxer::getResource(desc->id);
-        const uint8_t* data = (const uint8_t*)(boxer::getResource(desc->id) + WAV_HEADER_SIZE);
-        static const pa_sample_spec spec = { .format = PA_SAMPLE_S16LE, .rate = 44100, .channels = 2 };
-        pa_simple* stream = pa_simple_new(NULL, NULL, PA_STREAM_PLAYBACK, NULL, "boxer_track", &spec, NULL, NULL, NULL);
-        if(stream != NULL)
-        {
-            int32_t i = 0;
-            while((i+AUDIO_BUFFER_SIZE < stat->size) && desc->keepGoing)
-            {
-                if(pa_simple_write(stream, &data[i], AUDIO_BUFFER_SIZE, NULL) < 0)
-                {
-                    break;
-                }
-                i+=AUDIO_BUFFER_SIZE;
-            }
-            pa_simple_drain(stream, NULL);
-            pa_simple_free(stream);
-        }
-#endif
-
+        writeAudioResource(desc);
         if(desc->keepGoing == false || desc->delay == -1)
             break;
 
@@ -182,12 +140,9 @@ void stopAudioResource(int32_t id)
         if(gAudioThreadParam[i].id == id)
         {
             gAudioThreadParam[i].keepGoing = false;
-            pthread_mutex_lock(&jAudioMutex);
-            if(jAudioParam != NULL && jAudioParam->id == id)
-            {
-                jAudioParam->keepGoing = false;
-            }
-            pthread_mutex_unlock(&jAudioMutex);
+            pthread_mutex_lock(&gAudioMutex);
+            shutdownAudio(id);
+            pthread_mutex_unlock(&gAudioMutex);
             waitAudioResource(id);
             break;
         }
@@ -211,8 +166,9 @@ struct _BUILDER
 {
     _BUILDER()
     {
-        pthread_mutex_init(&jAudioMutex, NULL);
+        pthread_mutex_init(&gAudioMutex, NULL);
     }
+
    ~_BUILDER()
     {
         int32_t count = 0;
@@ -232,18 +188,9 @@ struct _BUILDER
 
 static _BUILDER resourceBuilder;
 
-}
-
 void preload(const char* path)
 {
-    int32_t delay = 0;
-#ifdef __ANDROID__
-    delay = 48; //Empirical, but could be derived by checking CPU usage is less than max output of 2 threads
-#else
-    delay = 1000;
-#endif
-
-    boxer::setFrameDelay(delay);
+    boxer::setFrameDelay(boxer::getDefaultFrameDelay());
 
     int32_t count = 0;
     char buffer[PATH_MAX];
@@ -268,6 +215,8 @@ void preload(const char* path)
     }
 }
 
+}
+
 int32_t main(int32_t argc, char** argv)
 {
     cachedArgc = argc;
@@ -284,7 +233,7 @@ int32_t main(int32_t argc, char** argv)
     memset(buffer, '\0', PATH_MAX);
     char* finalSlash = strrchr(cachedArgv[0], '/');
     memcpy(buffer, cachedArgv[0], (finalSlash - cachedArgv[0]) + 1);
-    preload(buffer);
+    boxer::preload(buffer);
     boxerMain();
 
     return 0;

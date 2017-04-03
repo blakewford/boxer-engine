@@ -1,9 +1,9 @@
-#include <map>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <pthread.h>
 
 #include "boxer.h"
 #include "boxer_internal.h"
@@ -13,9 +13,10 @@
 
 namespace boxer
 {
-    extern audioParam* jAudioParam;
-    extern pthread_mutex_t jAudioMutex;
+    extern pthread_mutex_t gAudioMutex;
 }
+
+extern boxer::audioParam* jAudioParam;
 
 JavaVM* jVM = NULL;
 jclass jBoxerEngine = NULL;
@@ -38,7 +39,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_starlo_boxer_BoxerEngine_preload(JNIE
 {
     const char* path = env->GetStringUTFChars(pathString, NULL);
 
-    preload(path);
+    boxer::preload(path);
 
     memset(androidData, '\0', PATH_MAX);
     char* finalSlash = strrchr(path, '/');
@@ -60,23 +61,23 @@ extern "C" JNIEXPORT void JNICALL Java_org_starlo_boxer_BoxerEngine_audioResourc
     jmethodID audioWrite = env->GetStaticMethodID(engine, "audioWrite", "([S)V");
     while(true)
     {
-        if(boxer::jAudioParam != NULL)
+        if(jAudioParam != NULL)
         {
             int32_t i = 0;
-            const boxer::wavStat* stat = (const boxer::wavStat*)boxer::getResource(boxer::jAudioParam->id);
-            const uint8_t* data = (const uint8_t*)(boxer::getResource(boxer::jAudioParam->id) + WAV_HEADER_SIZE);
+            const boxer::wavStat* stat = (const boxer::wavStat*)boxer::getResource(jAudioParam->id);
+            const uint8_t* data = (const uint8_t*)(boxer::getResource(jAudioParam->id) + WAV_HEADER_SIZE);
             jshortArray jData = env->NewShortArray(AUDIO_BUFFER_SIZE/sizeof(short));
-            while(i+AUDIO_BUFFER_SIZE < stat->size && boxer::jAudioParam->keepGoing)
+            while(i+AUDIO_BUFFER_SIZE < stat->size && jAudioParam->keepGoing)
             {
                 env->SetShortArrayRegion(jData, 0, AUDIO_BUFFER_SIZE/sizeof(short), (const short*)&data[i]);
                 env->CallStaticVoidMethod(engine, audioWrite, jData);
                 i+=AUDIO_BUFFER_SIZE;
             }
             env->DeleteLocalRef(jData);
-            pthread_mutex_lock(&boxer::jAudioMutex);
-            delete boxer::jAudioParam;
-            boxer::jAudioParam = NULL;
-            pthread_mutex_unlock(&boxer::jAudioMutex);
+            pthread_mutex_lock(&boxer::gAudioMutex);
+            delete jAudioParam;
+            jAudioParam = NULL;
+            pthread_mutex_unlock(&boxer::gAudioMutex);
         }
         sched_yield();
     }
