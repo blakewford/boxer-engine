@@ -119,11 +119,7 @@ void showStage()
 }
 
 #define WAV_HEADER_SIZE 44
-#ifdef __ANDROID__
-#define AUDIO_BUFFER_SIZE 2048
-#else
 #define AUDIO_BUFFER_SIZE 1024
-#endif
 void* audioResourceThread(void* param)
 {
     audioParam* desc = (audioParam*)param;
@@ -354,10 +350,10 @@ extern "C" JNIEXPORT void JNICALL Java_org_starlo_boxer_BoxerEngine_audioResourc
             int32_t i = 0;
             const boxer::wavStat* stat = (const boxer::wavStat*)boxer::getResource(boxer::jAudioParam->id);
             const uint8_t* data = (const uint8_t*)(boxer::getResource(boxer::jAudioParam->id) + WAV_HEADER_SIZE);
-            jshortArray jData = env->NewShortArray(AUDIO_BUFFER_SIZE);
+            jshortArray jData = env->NewShortArray(AUDIO_BUFFER_SIZE/sizeof(short));
             while(i+AUDIO_BUFFER_SIZE < stat->size && boxer::jAudioParam->keepGoing)
             {
-                env->SetShortArrayRegion(jData, 0, AUDIO_BUFFER_SIZE, (const short*)&data[i]);
+                env->SetShortArrayRegion(jData, 0, AUDIO_BUFFER_SIZE/sizeof(short), (const short*)&data[i]);
                 env->CallStaticVoidMethod(engine, audioWrite, jData);
                 i+=AUDIO_BUFFER_SIZE;
             }
