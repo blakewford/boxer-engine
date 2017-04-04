@@ -117,6 +117,7 @@ void parser(uint8_t* text)
     }
     j--;
     buffer[j] = '\0';
+    memset(value, '\0', MAX_MANIFEST_TEXT);
     strip(buffer, value);
     push(&storage, key);
     output(value);
