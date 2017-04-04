@@ -215,11 +215,47 @@ void preload(const char* path)
     }
 }
 
+void* inputThread(void* param)
+{
+    while(true)
+    {
+        int c = 0;
+#ifndef __ANDROID__
+        c = getch();
+#endif
+        switch(c)
+        {
+            case 'w':
+            case 'W':
+                BOXER_LOG("UP\n", c);
+                break;
+            case 'a':
+            case 'A':
+                BOXER_LOG("LEFT\n", c);
+                break;
+            case 's':
+            case 'S':
+                BOXER_LOG("DOWN\n", c);
+                break;
+            case 'd':
+            case 'D':
+                BOXER_LOG("RIGHT\n", c);
+                break;
+            case ' ':
+                BOXER_LOG("SPACE\n", c);
+                break;
+        }
+    }
+
+    return NULL;
+}
+
 }
 
 int32_t main(int32_t argc, char** argv)
 {
     cachedArgc = argc;
+    memset(argvStorage, '\0', 1024);
     char* storagePointer = argvStorage;
     while(argc--)
     {
@@ -234,7 +270,18 @@ int32_t main(int32_t argc, char** argv)
     char* finalSlash = strrchr(cachedArgv[0], '/');
     memcpy(buffer, cachedArgv[0], (finalSlash - cachedArgv[0]) + 1);
     boxer::preload(buffer);
+#ifndef __ANDROID__
+    WINDOW* w = initscr();
+    noecho();
+    scrollok(w, true);
+#endif
+    pthread_t inputThread;
+    pthread_create(&inputThread, NULL, boxer::inputThread, NULL);
     boxerMain();
+    pthread_join(inputThread, NULL);
+#ifndef __ANDROID__
+    endwin();
+#endif
 
     return 0;
 }

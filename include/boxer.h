@@ -71,3 +71,10 @@ namespace boxer
     void waitAudioResource(int32_t id);
 }
 
+#ifdef __ANDROID__
+#define BOXER_LOG(...)
+#else
+#include <ncurses.h>
+#define BOXER_LOG(...) printw(__VA_ARGS__); refresh();
+#endif
+
