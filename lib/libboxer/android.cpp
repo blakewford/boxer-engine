@@ -48,4 +48,17 @@ void shutdownAudio(int32_t id)
     }
 }
 
+void initializeInput()
+{
+}
+
+control getControlInput()
+{
+    return UNKNOWN;
+}
+
+void shutdownInput()
+{
+}
+
 }

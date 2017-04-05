@@ -81,14 +81,14 @@ int32_t blockResource(int32_t id, int32_t x, int32_t y)
     if(gStage == NULL || (x > gStage->getWidth()) || (y > gStage->getHeight()))
         return code;
 
-    const boxer::bmpStat* stat = (const boxer::bmpStat*)boxer::getResource(id);
+    const boxer::bmpStat* stat = (const bmpStat*)boxer::getResource(id);
     assert(stat != NULL);
     assert(stat->colorPlanes == 1);
     assert(stat->compression == 3); //BI_BITFIELDS
 
     if((x+stat->width) <= gStage->getWidth() && (y+stat->height) <= gStage->getHeight())
     {
-        gStage->draw(boxer::getResource(id), x, y);
+        gStage->draw(getResource(id), x, y);
         code = SUCCESS;
     }
 
@@ -190,7 +190,7 @@ static _BUILDER resourceBuilder;
 
 void preload(const char* path)
 {
-    boxer::setFrameDelay(boxer::getDefaultFrameDelay());
+    setFrameDelay(getDefaultFrameDelay());
 
     int32_t count = 0;
     char buffer[PATH_MAX];
@@ -215,39 +215,68 @@ void preload(const char* path)
     }
 }
 
+void (*gResponseUP)(control) = NULL;
+void (*gResponseLEFT)(control) = NULL;
+void (*gResponseDOWN)(control) = NULL;
+void (*gResponseRIGHT)(control) = NULL;
+void (*gResponseAUX1)(control) = NULL;
+
 void* inputThread(void* param)
 {
     while(true)
     {
-        int c = 0;
-#ifndef __ANDROID__
-        c = getch();
-#endif
+        void (*temp)(control) = NULL;
+        boxer::control c = getControlInput();
         switch(c)
         {
-            case 'w':
-            case 'W':
-                BOXER_LOG("UP\n", c);
+            case control::UP:
+                temp = gResponseUP;
                 break;
-            case 'a':
-            case 'A':
-                BOXER_LOG("LEFT\n", c);
+            case control::LEFT:
+                temp = gResponseLEFT;
                 break;
-            case 's':
-            case 'S':
-                BOXER_LOG("DOWN\n", c);
+            case control::DOWN:
+                temp = gResponseDOWN;
                 break;
-            case 'd':
-            case 'D':
-                BOXER_LOG("RIGHT\n", c);
+            case control::RIGHT:
+                temp = gResponseRIGHT;
                 break;
-            case ' ':
-                BOXER_LOG("SPACE\n", c);
+            case control::AUX1:
+                temp = gResponseAUX1;
+                break;
+            case UNKNOWN:
                 break;
         }
+
+        if(temp != NULL)
+            temp(c);
     }
 
     return NULL;
+}
+
+void setControlResponse(boxer::control control,  void (*response)(boxer::control))
+{
+    switch(control)
+    {
+        case UP:
+            gResponseUP = response;
+            break;
+        case LEFT:
+            gResponseLEFT = response;
+            break;
+        case DOWN:
+            gResponseDOWN = response;
+            break;
+        case RIGHT:
+            gResponseRIGHT = response;
+            break;
+        case AUX1:
+            gResponseAUX1 = response;
+            break;
+        case UNKNOWN:
+            break;
+    }
 }
 
 }
@@ -270,18 +299,12 @@ int32_t main(int32_t argc, char** argv)
     char* finalSlash = strrchr(cachedArgv[0], '/');
     memcpy(buffer, cachedArgv[0], (finalSlash - cachedArgv[0]) + 1);
     boxer::preload(buffer);
-#ifndef __ANDROID__
-    WINDOW* w = initscr();
-    noecho();
-    scrollok(w, true);
-#endif
+    boxer::initializeInput();
     pthread_t inputThread;
     pthread_create(&inputThread, NULL, boxer::inputThread, NULL);
     boxerMain();
     pthread_join(inputThread, NULL);
-#ifndef __ANDROID__
-    endwin();
-#endif
+    boxer::shutdownInput();
 
     return 0;
 }

@@ -9,6 +9,28 @@
 #include "boxer.h"
 #include "dictionary.h"
 
+void controlResponse(boxer::control trigger)
+{
+    switch(trigger)
+    {
+        case boxer::UP:
+            BOXER_LOG("UP\n");
+            break;
+        case boxer::LEFT:
+            BOXER_LOG("LEFT\n");
+            break;
+        case boxer::DOWN:
+            BOXER_LOG("DOWN\n");
+            break;
+        case boxer::RIGHT:
+            BOXER_LOG("RIGHT\n");
+            break;
+        case boxer::AUX1:
+            BOXER_LOG("AUX1\n");
+            break;
+    }
+}
+
 void boxerMain()
 {
     int32_t count = 0;
@@ -19,6 +41,12 @@ void boxerMain()
     {
         BOXER_LOG("%s\n", arg[count++]);
     }
+
+    boxer::setControlResponse(boxer::UP, controlResponse);
+    boxer::setControlResponse(boxer::LEFT, controlResponse);
+    boxer::setControlResponse(boxer::DOWN, controlResponse);
+    boxer::setControlResponse(boxer::RIGHT, controlResponse);
+    boxer::setControlResponse(boxer::AUX1, controlResponse);
 
     const boxer::bmpStat* stage = (const boxer::bmpStat*)boxer::getResource(STAGE);
     const boxer::bmpStat* sprite = (const boxer::bmpStat*)boxer::getResource(SPRITE);

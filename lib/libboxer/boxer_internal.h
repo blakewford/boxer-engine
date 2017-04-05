@@ -15,5 +15,8 @@ void preload(const char* path);
 int32_t getDefaultFrameDelay();
 void writeAudioResource(audioParam* param);
 void shutdownAudio(int32_t id);
+void initializeInput();
+control getControlInput();
+void shutdownInput();
 
 }

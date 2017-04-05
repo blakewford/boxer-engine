@@ -18,8 +18,8 @@ int32_t getDefaultFrameDelay()
 
 void writeAudioResource(audioParam* param)
 {
-    const boxer::wavStat* stat = (const boxer::wavStat*)boxer::getResource(param->id);
-    const uint8_t* data = (const uint8_t*)(boxer::getResource(param->id) + WAV_HEADER_SIZE);
+    const boxer::wavStat* stat = (const wavStat*)getResource(param->id);
+    const uint8_t* data = (const uint8_t*)(getResource(param->id) + WAV_HEADER_SIZE);
     static const pa_sample_spec spec = { .format = PA_SAMPLE_S16LE, .rate = 44100, .channels = 2 };
     pa_simple* stream = pa_simple_new(NULL, NULL, PA_STREAM_PLAYBACK, NULL, "boxer_track", &spec, NULL, NULL, NULL);
     if(stream != NULL)
@@ -40,6 +40,48 @@ void writeAudioResource(audioParam* param)
 
 void shutdownAudio(int32_t id)
 {
+}
+
+control getControlInput()
+{
+    char c = getch();
+    control mapped = UNKNOWN;
+    switch(c)
+    {
+        case 'w':
+        case 'W':
+            mapped = UP;
+            break;
+        case 'a':
+        case 'A':
+            mapped = LEFT;
+            break;
+        case 's':
+        case 'S':
+            mapped = DOWN;
+            break;
+        case 'd':
+        case 'D':
+            mapped = RIGHT;
+            break;
+        case ' ':
+            mapped = AUX1;
+            break;
+    }
+
+    return mapped;
+}
+
+void initializeInput()
+{
+    WINDOW* w = initscr();
+    noecho();
+    scrollok(w, true);
+}
+
+void shutdownInput()
+{
+    endwin();
 }
 
 }

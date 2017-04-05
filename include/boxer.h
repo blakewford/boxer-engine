@@ -69,6 +69,18 @@ namespace boxer
     void startAudioResource(int32_t id, int32_t delay = -1);
     void stopAudioResource(int32_t id);
     void waitAudioResource(int32_t id);
+
+    enum control
+    {
+        UNKNOWN,
+        UP,
+        LEFT,
+        DOWN,
+        RIGHT,
+        AUX1
+    };
+
+    void setControlResponse(boxer::control,  void (*response)(control));
 }
 
 #ifdef __ANDROID__
