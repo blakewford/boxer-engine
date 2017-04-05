@@ -10,6 +10,16 @@ import android.graphics.drawable.*;
 
 public class BoxerEngine
 {
+    public enum Control
+    {
+        UNKNOWN,
+        UP,
+        LEFT,
+        DOWN,
+        RIGHT,
+        AUX1
+    }
+
     static public native void preload(String path);
     static public native void boxerMain();
     static public native void audioResourceThread();
@@ -60,6 +70,11 @@ public class BoxerEngine
     static public void audioWrite(short[] data)
     {
         mPlayer.write(data, 0, data.length);
+    }
+
+    static public void triggerControl(Control control)
+    {
+        triggerControl(control.ordinal());
     }
 
     static{ System.loadLibrary("boxer"); }
