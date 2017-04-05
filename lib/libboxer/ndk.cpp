@@ -85,6 +85,14 @@ extern "C" JNIEXPORT void JNICALL Java_org_starlo_boxer_BoxerEngine_audioResourc
 
 extern "C" JNIEXPORT void JNICALL Java_org_starlo_boxer_BoxerEngine_triggerControl(JNIEnv* env, jobject obj, jint control)
 {
+    static bool first = true;
+    if(first)
+    {
+        BOXER_LOG("Input Initialized\n");
+        boxer::initializeInput();
+        first = false;
+    }
+
     while(boxer::jControl != boxer::UNKNOWN)
         usleep(1);
 

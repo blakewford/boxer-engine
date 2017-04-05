@@ -11,6 +11,8 @@ struct audioParam
     bool keepGoing;
 };
 
+void* inputThread(void* param);
+
 void preload(const char* path);
 int32_t getDefaultFrameDelay();
 void writeAudioResource(audioParam* param);

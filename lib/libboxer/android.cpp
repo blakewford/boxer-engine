@@ -48,8 +48,10 @@ void shutdownAudio(int32_t id)
     }
 }
 
+pthread_t gInputThread;
 void initializeInput()
 {
+    pthread_create(&gInputThread, NULL, boxer::inputThread, NULL);
 }
 
 control jControl = UNKNOWN;
@@ -60,11 +62,13 @@ control getControlInput()
 
     control temp = jControl;
     jControl = UNKNOWN;
+
     return temp;
 }
 
 void shutdownInput()
 {
+    pthread_join(gInputThread, NULL);
 }
 
 }
