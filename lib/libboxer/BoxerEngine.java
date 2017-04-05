@@ -13,6 +13,7 @@ public class BoxerEngine
     static public native void preload(String path);
     static public native void boxerMain();
     static public native void audioResourceThread();
+    static public native void triggerControl(int control);
 
     static ImageView mScreen = null;
     static AudioTrack mPlayer = null;

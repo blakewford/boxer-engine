@@ -52,9 +52,15 @@ void initializeInput()
 {
 }
 
+control jControl = UNKNOWN;
 control getControlInput()
 {
-    return UNKNOWN;
+    while(jControl == UNKNOWN)
+        usleep(1);
+
+    control temp = jControl;
+    jControl = UNKNOWN;
+    return temp;
 }
 
 void shutdownInput()

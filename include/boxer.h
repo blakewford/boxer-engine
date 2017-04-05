@@ -84,7 +84,8 @@ namespace boxer
 }
 
 #ifdef __ANDROID__
-#define BOXER_LOG(...)
+#include <android/log.h>
+#define BOXER_LOG(...) __android_log_print(ANDROID_LOG_VERBOSE, "Boxer", __VA_ARGS__);
 #else
 #include <ncurses.h>
 #define BOXER_LOG(...) printw(__VA_ARGS__); refresh();

@@ -9,11 +9,11 @@
 #include "boxer_internal.h"
 
 #include "jni.h"
-#include <android/log.h>
 
 namespace boxer
 {
     extern pthread_mutex_t gAudioMutex;
+    extern control jControl;
 }
 
 extern boxer::audioParam* jAudioParam;
@@ -81,4 +81,12 @@ extern "C" JNIEXPORT void JNICALL Java_org_starlo_boxer_BoxerEngine_audioResourc
         }
         sched_yield();
     }
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_starlo_boxer_BoxerEngine_triggerControl(JNIEnv* env, jobject obj, jint control)
+{
+    while(boxer::jControl != boxer::UNKNOWN)
+        usleep(1);
+
+    boxer::jControl = (boxer::control)control;
 }
