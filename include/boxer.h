@@ -7,6 +7,8 @@ extern "C" void boxerMain();
 
 namespace boxer
 {
+    extern "C" bool gKeepGoing;
+
     const int32_t MAX_MANIFEST_ENTRY = 64;
     const int32_t MAX_MANIFEST_TEXT = PATH_MAX;
 

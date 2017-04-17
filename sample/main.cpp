@@ -60,7 +60,7 @@ void boxerMain()
 
     int32_t x = 0;
     int32_t y = 0;
-    while(true)
+    while(boxer::gKeepGoing)
     {
         boxer::startAudioResource(AUDIO);
         x = rand() % ((stage->width-sprite->width) + 1);

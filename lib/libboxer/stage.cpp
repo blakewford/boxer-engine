@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "stage.h"
+#include "boxer_internal.h"
 
 #ifdef __ANDROID__
 #include "jni.h"
@@ -74,14 +75,16 @@ void stage::draw(const uint8_t* bmp, int32_t x, int32_t y)
 
 void stage::show()
 {
+    FILE* debug = NULL;
 #ifdef __ANDROID__
     char buffer[PATH_MAX];
     memset(buffer, '\0', PATH_MAX);
     memcpy(buffer, androidData, strlen(androidData));
     strcat(buffer, "debug.bmp");
-    FILE* debug = fopen(buffer, "w");
-#else
-    FILE* debug = fopen("debug.bmp", "w");
+    debug = fopen(buffer, "w");
+#endif
+#if DEBUG
+    debug = fopen("debug.bmp", "w");
 #endif
     if(debug)
     {
@@ -111,7 +114,6 @@ void stage::show()
         fwrite(&table, 1, sizeof(boxer::colorTable), debug);
         fwrite(m_stageData, 1, m_stageWidth*m_stageHeight*2, debug);
         fclose(debug);
-
 #ifdef __ANDROID__
         JNIEnv* jThreadEnv = NULL;
         jVM->AttachCurrentThread(&jThreadEnv, NULL);
@@ -120,6 +122,7 @@ void stage::show()
         jThreadEnv->DeleteLocalRef(imageString);
 #endif
     }
+    writeDisplay(m_stageData);
 }
 
 int32_t stage::getWidth()

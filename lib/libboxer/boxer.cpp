@@ -16,6 +16,8 @@ int32_t cachedArgc = 0;
 char argvStorage[1024];
 char* cachedArgv[64];
 
+bool gKeepGoing = true;
+
 namespace boxer
 {
 
@@ -223,7 +225,7 @@ void (*gResponseAUX1)(control) = NULL;
 
 void* inputThread(void* param)
 {
-    while(true)
+    while(gKeepGoing)
     {
         void (*temp)(control) = NULL;
         boxer::control c = getControlInput();
@@ -299,10 +301,12 @@ int32_t main(int32_t argc, char** argv)
     char* finalSlash = strrchr(cachedArgv[0], '/');
     memcpy(buffer, cachedArgv[0], (finalSlash - cachedArgv[0]) + 1);
     boxer::preload(buffer);
+    boxer::initializeDisplay();
     boxer::initializeInput();
     pthread_t inputThread;
     pthread_create(&inputThread, NULL, boxer::inputThread, NULL);
     boxerMain();
+    BOXER_LOG("Press any key to exit.\n");
     pthread_join(inputThread, NULL);
     boxer::shutdownInput();
 
