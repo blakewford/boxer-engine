@@ -1,6 +1,10 @@
-sample: main.o
-	g++ $^ -O3 -o sample -L$(BOXER_DIR)/lib -lboxer -lpthread -lpulse-simple -lpulse -lncurses `pkg-config --cflags --libs gtk+-3.0`
+include ../boxer.mk
 
+sample: main.o
+	g++ $^ -O3 -o sample -L$(BOXER_DIR)/lib -lboxer -lpthread -lncurses
+
+linux: main.o
+	g++ $^ -O3 -o sample -L$(BOXER_DIR)/lib -lboxer -lpthread $(BOXER_LIBS)
 .PHONY: dictionary.h
 
 dictionary.h:

@@ -16,10 +16,10 @@ int32_t cachedArgc = 0;
 char argvStorage[1024];
 char* cachedArgv[64];
 
-bool gKeepGoing = true;
-
 namespace boxer
 {
+
+bool gKeepGoing = true;
 
 enum error: int32_t
 {

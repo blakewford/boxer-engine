@@ -4,9 +4,15 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
+#include "jni.h"
 
 #include "boxer.h"
 #include "boxer_internal.h"
+
+extern JavaVM* jVM;
+extern jclass jBoxerEngine;
+extern jmethodID jShowStage;
+extern char androidData[PATH_MAX];
 
 boxer::audioParam* jAudioParam = NULL;
 
@@ -18,6 +24,29 @@ extern pthread_mutex_t gAudioMutex;
 int32_t getDefaultFrameDelay()
 {
     return 48; //Empirical, but could be derived by checking CPU usage is less than max output of 2 threads
+}
+
+void initializeDisplay()
+{
+}
+
+char buffer[PATH_MAX];
+const char* getDebugImagePath()
+{
+    memset(buffer, '\0', PATH_MAX);
+    memcpy(buffer, androidData, strlen(androidData));
+    strcat(buffer, "debug.bmp");
+
+    return buffer;
+}
+
+void writeDisplay(uint8_t* data)
+{
+    JNIEnv* jThreadEnv = NULL;
+    jVM->AttachCurrentThread(&jThreadEnv, NULL);
+    jstring imageString = jThreadEnv->NewStringUTF(buffer);
+    jThreadEnv->CallStaticVoidMethod(jBoxerEngine, jShowStage, imageString);
+    jThreadEnv->DeleteLocalRef(imageString);
 }
 
 void writeAudioResource(audioParam* param)

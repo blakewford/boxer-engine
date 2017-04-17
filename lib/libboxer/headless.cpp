@@ -19,6 +19,11 @@ void initializeDisplay()
 {
 }
 
+const char* getDebugImagePath()
+{
+    return "debug.bmp";
+}
+
 void writeDisplay(uint8_t* data)
 {
 }

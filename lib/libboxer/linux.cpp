@@ -115,6 +115,11 @@ void initializeDisplay()
     pthread_create(&gtkThread, NULL, runGTK, NULL);
 }
 
+const char* getDebugImagePath()
+{
+    return "";
+}
+
 void writeDisplay(uint8_t* data)
 {
     gData = data;

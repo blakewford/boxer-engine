@@ -1,16 +1,11 @@
-libboxer.a: boxer.o stage.o linux.o
-	ar -cvq $@ $^
-	cp $@ ../$@
+libboxer.a: headless.o
+	make -f Makefile-common $@
 
-boxer.o: boxer.cpp
+linux:
+	make -f Makefile-linux
+
+headless.o: headless.cpp
 	g++ -g -c $< -o $@ -I../../include -std=c++11
-
-stage.o: stage.cpp
-	g++ -g -c $< -o $@ -I../../include -std=c++11
-
-linux.o: linux.cpp
-	g++ -g -c $< `pkg-config --cflags --libs gtk+-3.0` -o $@ -I../../include -std=c++11
 
 clean:
-	-@rm libboxer.a
-	-@rm *.o
+	make -f Makefile-common $@
