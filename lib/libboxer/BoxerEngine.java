@@ -6,6 +6,7 @@ import android.util.*;
 import android.media.*;
 import android.widget.*;
 import android.content.*;
+import android.graphics.*;
 import android.graphics.drawable.*;
 
 public class BoxerEngine
@@ -44,7 +45,7 @@ public class BoxerEngine
         mPlayer.play();
     }
 
-    static public void showStage(final String path)
+    static public void showStage(final byte[] data)
     {
         final long startTime = System.nanoTime();
         mScreen.post(new Runnable()
@@ -53,7 +54,7 @@ public class BoxerEngine
             {
                 try
                 {
-                    Drawable frame = Drawable.createFromPath(path);
+                    Drawable frame = new BitmapDrawable(mScreen.getResources(), BitmapFactory.decodeByteArray(data, 0, data.length));
                     if(mScreen != null)
                     {
                         mScreen.setImageDrawable(frame);
