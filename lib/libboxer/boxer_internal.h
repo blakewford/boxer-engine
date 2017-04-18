@@ -17,6 +17,8 @@ void preload(const char* path);
 int32_t getDefaultFrameDelay();
 void initializeDisplay();
 const char* getDebugImagePath();
+boxer::bmpStat* buildStageHeader();
+boxer::colorTable* buildStageColorTable();
 void writeDisplay(uint8_t* data);
 void writeAudioResource(audioParam* param);
 void shutdownAudio(int32_t id);

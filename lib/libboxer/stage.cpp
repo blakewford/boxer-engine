@@ -70,30 +70,12 @@ void stage::show()
     FILE* debug = fopen(getDebugImagePath(), "w");
     if(debug)
     {
-        boxer::bmpStat stat;
-        stat.ident = 0x4d42;
-        stat.reserved = 0;
-        stat.offset = sizeof(boxer::bmpStat)+sizeof(boxer::colorTable);
-        stat.headerSize = stat.offset - 0xE;
-        stat.width = m_stageWidth;
-        stat.height = m_stageHeight;
-        stat.colorPlanes = 1;
-        stat.compression = 3;
-        stat.dataSize = (2*m_stageWidth*m_stageHeight);
-        stat.size = stat.offset+stat.dataSize;
-        stat.depth = 16;
-        stat.paletteSize = 0;
-        stat.important = 0;
-        stat.horRes = 0xB13;
-        stat.vertRes = 0xB13;
-
-        boxer::colorTable table;
-        table.R = 0xf800;
-        table.G = 0x7e0;
-        table.B = 0x1f;
-
-        fwrite(&stat, 1, sizeof(boxer::bmpStat), debug);
-        fwrite(&table, 1, sizeof(boxer::colorTable), debug);
+        const bmpStat* stat = buildStageHeader();
+        fwrite(stat, 1, sizeof(boxer::bmpStat), debug);
+        free((void*)stat);
+        const colorTable* table = buildStageColorTable();
+        fwrite(table, 1, sizeof(boxer::colorTable), debug);
+        free((void*)table);
         fwrite(m_stageData, 1, m_stageWidth*m_stageHeight*2, debug);
         fclose(debug);
     }

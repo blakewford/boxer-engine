@@ -51,7 +51,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_starlo_boxer_BoxerEngine_preload(JNIE
 extern "C" JNIEXPORT void JNICALL Java_org_starlo_boxer_BoxerEngine_boxerMain(JNIEnv* env, jobject obj)
 {
     jBoxerEngine = env->FindClass("org/starlo/boxer/BoxerEngine");
-    jShowStage = env->GetStaticMethodID(jBoxerEngine, "showStage", "(Ljava/lang/String;)V");
+    jShowStage = env->GetStaticMethodID(jBoxerEngine, "showStage", "([B)V");
     boxerMain();
 }
 

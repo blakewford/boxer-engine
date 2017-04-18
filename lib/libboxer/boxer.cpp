@@ -281,6 +281,41 @@ void setControlResponse(boxer::control control,  void (*response)(boxer::control
     }
 }
 
+boxer::bmpStat* buildStageHeader()
+{
+    int32_t width = gStage->getWidth();
+    int32_t height = gStage->getHeight();
+
+    boxer::bmpStat* stat = (boxer::bmpStat*)malloc(sizeof(boxer::bmpStat));
+    stat->ident = 0x4d42;
+    stat->reserved = 0;
+    stat->offset = sizeof(boxer::bmpStat)+sizeof(boxer::colorTable);
+    stat->headerSize = stat->offset - 0xE;
+    stat->width = width;
+    stat->height = height;
+    stat->colorPlanes = 1;
+    stat->compression = 3;
+    stat->dataSize = (2*width*height);
+    stat->size = stat->offset+stat->dataSize;
+    stat->depth = 16;
+    stat->paletteSize = 0;
+    stat->important = 0;
+    stat->horRes = 0xB13;
+    stat->vertRes = 0xB13;
+
+    return stat;
+}
+
+boxer::colorTable* buildStageColorTable()
+{
+    boxer::colorTable* table = (boxer::colorTable*)malloc(sizeof(boxer::colorTable));
+    table->R = 0xf800;
+    table->G = 0x7e0;
+    table->B = 0x1f;
+
+    return table;
+}
+
 }
 
 int32_t main(int32_t argc, char** argv)
