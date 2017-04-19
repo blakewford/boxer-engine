@@ -316,6 +316,22 @@ boxer::colorTable* buildStageColorTable()
     return table;
 }
 
+void takeScreenshot(const char* path)
+{
+    FILE* output = fopen(path, "w");
+    if(output)
+    {
+        const bmpStat* stat = buildStageHeader();
+        fwrite(stat, 1, sizeof(boxer::bmpStat), output);
+        free((void*)stat);
+        const colorTable* table = buildStageColorTable();
+        fwrite(table, 1, sizeof(boxer::colorTable), output);
+        free((void*)table);
+        fwrite(gStage->getData(), 1, gStage->getWidth()*gStage->getHeight()*2, output);
+        fclose(output);
+    }
+}
+
 }
 
 int32_t main(int32_t argc, char** argv)

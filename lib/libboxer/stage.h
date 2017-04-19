@@ -14,8 +14,9 @@ public:
         void draw(const uint8_t* bmp, int32_t x, int32_t y);
         void show();
 
-    int32_t getWidth();
-    int32_t getHeight();
+      int32_t getWidth();
+      int32_t getHeight();
+const uint8_t* getData();
 
 private:
     int32_t m_stageWidth;

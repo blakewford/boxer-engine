@@ -72,6 +72,8 @@ namespace boxer
     void stopAudioResource(int32_t id);
     void waitAudioResource(int32_t id);
 
+    void takeScreenshot(const char* path);
+
     enum control
     {
         UNKNOWN,

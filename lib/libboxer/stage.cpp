@@ -67,18 +67,7 @@ void stage::draw(const uint8_t* bmp, int32_t x, int32_t y)
 
 void stage::show()
 {
-    FILE* debug = fopen(getDebugImagePath(), "w");
-    if(debug)
-    {
-        const bmpStat* stat = buildStageHeader();
-        fwrite(stat, 1, sizeof(boxer::bmpStat), debug);
-        free((void*)stat);
-        const colorTable* table = buildStageColorTable();
-        fwrite(table, 1, sizeof(boxer::colorTable), debug);
-        free((void*)table);
-        fwrite(m_stageData, 1, m_stageWidth*m_stageHeight*2, debug);
-        fclose(debug);
-    }
+    takeScreenshot(getDebugImagePath());
     writeDisplay(m_stageData);
 }
 
@@ -90,6 +79,11 @@ int32_t stage::getWidth()
 int32_t stage::getHeight()
 {
    return m_stageHeight;
+}
+
+const uint8_t* stage::getData()
+{
+   return m_stageData;
 }
 
 }
