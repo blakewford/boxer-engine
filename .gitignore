@@ -1,4 +1,5 @@
 gen
+sequence
 libboxer.a
 *.o
 dictionary.h
