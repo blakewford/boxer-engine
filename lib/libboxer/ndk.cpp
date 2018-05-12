@@ -42,7 +42,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_starlo_boxer_BoxerEngine_preload(JNIE
     boxer::preload(path);
 
     memset(androidData, '\0', PATH_MAX);
-    char* finalSlash = strrchr(path, '/');
+    const char* finalSlash = strrchr(path, '/');
     memcpy(androidData, path, (finalSlash - path) + 1);
 
     env->ReleaseStringUTFChars(pathString, path);
